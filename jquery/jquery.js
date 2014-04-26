@@ -5,6 +5,10 @@
 
 steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 
+	if(window.MutationObserver || window.MutationEvent) {
+		return;
+	}
+
 	// Feature detect which domManip we are using.
 	// Handles insertions, like `append`, `insertBefore`, etc.
 	var oldDomManip = $.fn.domManip;

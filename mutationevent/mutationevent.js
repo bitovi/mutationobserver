@@ -6,6 +6,12 @@
 
 steal("can/util/weakmap", "can/util/setimmediate", function(WeakMap, setImmediate){
 
+	// If this browser supports MutationObserver natively or if it doesn't support
+	// Mutation Events, go ahead and return.
+	if(window.MutationObserver || !window.MutationEvent) {
+		return;
+	}
+
   var registrationsTable = new WeakMap();
 
   // This is used to ensure that we never schedule 2 callas to setImmediate

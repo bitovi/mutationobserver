@@ -1,14 +1,11 @@
-steal("mutationobserver/jquery", function(jObserver) {
-	return jObserver;
-});
+steal("mutationobserver/jquery", "mutationobserver/mutationevent", function(jObserver, EventObserver) {
 
-/*steal('can/util/can.js', 
-			'./mutation_event', function(can, Observer) {
 	if(window.MutationObserver) {
-		can.MutationObserver = MutationObserver;
+		return window.MutationObserver;
+	} else if(window.MutationEvent) {
+		return EventObserver;
 	} else {
-		can.MutationObserver = Observer;
+		return jObserver;
 	}
 
-	return can.MutationObserver;
-});*/
+});

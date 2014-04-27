@@ -32,6 +32,28 @@ steal("jquery", "mutationobserver", function($, Observer) {
 		stop();
 	});
 
+	test("It observes multiple children being inserted", function() {
+		var element = document.createElement("div");
+
+		var observer = new Observer(function(){});
+
+		observer.observe(element, {
+			childList: true
+		});
+
+		$("#qunit-test-area").append(element);
+
+		var frag = $("<div class='one'></div><div class='two'></div>");
+		$(element).append(frag);
+
+		var records = observer.takeRecords();
+
+		equal(records.length, 1, "There is 1 mutation");
+		equal(records[0].addedNodes.length, 2, "There were 2 nodes added");
+		equal(records[0].addedNodes[0].className, "one", "The first node was added");
+		equal(records[0].addedNodes[1].className, "two", "The second node was added");
+	});
+
 	test("It observes children being removed", function() {
 		var element = document.createElement("div");
 		var child = document.createElement("span");
@@ -165,10 +187,10 @@ steal("jquery", "mutationobserver", function($, Observer) {
 		var records = observer.takeRecords();
 		var mutation = records[0];
 
-		equal(records.length, 1);
-		equal(mutation.type, "childList");
-		equal(mutation.target, child);
-		equal(mutation.addedNodes.length, 1);
+		equal(records.length, 1, "There was 1 mutation");
+		equal(mutation.type, "childList", "The mutation was for childList");
+		equal(mutation.target, child, "The target is the child");
+		equal(mutation.addedNodes.length, 1, "There was 1 added node");
 		equal(mutation.addedNodes[0].className, "new-node", "The correct added node");
 	});
 });

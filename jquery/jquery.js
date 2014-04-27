@@ -12,55 +12,35 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 	// Feature detect which domManip we are using.
 	// Handles insertions, like `append`, `insertBefore`, etc.
 	var oldDomManip = $.fn.domManip;
-	$.fn.domManip = function (args, cb1, cb2) {
-		for (var i = 1; i < arguments.length; i++) {
-			if (typeof arguments[i] === 'function') {
-				cbIndex = i;
-				break;
+	$.fn.domManip = function () {
+		var addedNodes = [];
+		var num = arguments.length;
+		var callback = arguments[num - 1];
+		
+		// Get all of the nodes that have been added
+		arguments[num - 1] = function(elem) {
+			// If it's a DocumentFragment, get the fragment's children
+			if(elem.nodeType === 11) {
+				$(elem).children().each(function(i, innerelem) {
+					addedNodes.push(innerelem);
+				});
+			} else {
+				addedNodes.push(elem);
 			}
+			return callback.apply(this, arguments);
+		};
+
+		var ret = oldDomManip.apply(this, arguments);
+
+		// Traverse to inform parents of the event.
+		if(addedNodes.length) {
+			traverse($(addedNodes[0]), "canChildList", handleChildList, {
+				addedNodes: addedNodes
+			});
 		}
-		return oldDomManip.apply(this, arguments);
+
+		return ret;
 	};
-	$(document.createElement("div"))
-		.append(document.createElement("div"));
-
-	$.fn.domManip = (cbIndex === 2 ?
-		function (args, table, callback) {
-			var addedNodes = [];
-
-			// Get all of the nodes that have been added
-			var ret = oldDomManip.call(this, args, table, function(elem) {
-				addedNodes.push(elem);
-				return callback.apply(this, arguments);
-			});
-
-			// Traverse to inform parents of the event.
-			$.each(addedNodes, function(i, element) {
-				traverse($(element), "canChildList", handleChildList, {
-					addedNodes: addedNodes
-				});
-			});
-
-			return ret;
-		} :
-		function (args, callback) {
-			var addedNodes = [];
-
-			// Get all of the nodes that have been added
-			var ret = oldDomManip.call(this, args, function(elem) {
-				addedNodes.push(elem);
-				return callback.apply(this, arguments);
-			});
-
-			// Traverse to inform parents of the event.
-			$.each(addedNodes, function(i, element) {
-				traverse($(element), "canChildList", handleChildList, {
-					addedNodes: addedNodes
-				});
-			});
-
-			return ret;
-		});
 
 	// Handles removes like `remove` and `empty`
 	var oldClean = $.cleanData;

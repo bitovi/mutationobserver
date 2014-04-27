@@ -31,6 +31,20 @@ steal("mutationobserver", function(Observer) {
 });
 ```
 
+# Options support
+
+| Feature               | Native        | Events Polyfill  | jQuery Polyfill  |
+| --------------------- |:-------------:| ----------------:| ----------------:|
+| childList             | &#x2713;      | &#x2713;         | &#x2713;         |
+| attributes            | &#x2713;      | &#x2713;         | &#x2713;         |
+| characterData         | &#x2713;      | &#x2713;         | &#x2717;         |
+| subtree               | &#x2713;      | &#x2713;         | &#x2713;         |
+| attributeOldValue     | &#x2713;      | &#x2713;         | &#x2713;         |
+| characterDataOldValue | &#x2713;      | &#x2713;         | &#x2717;         |
+| attributeFilter       | &#x2713;      | &#x2713;         | &#x2713;         |
+
+jQuery has no way to manipulate a CharacterData's data property, so there is no practical way to do this. Most commonly people manipulate text content using `text()` which would result in new TextNodes anyways.
+
 # Development
 
 To contribute first clone the repository then run `bower install` which will install the development dependencies (just QUnit). Then navigate to `test/test.html` to see the tests. If you find a bug create a test in one of the appropriate files:

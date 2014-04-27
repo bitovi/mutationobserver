@@ -35,27 +35,29 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 			});
 
 			// Traverse to inform parents of the event.
-			if(addedNodes.length) {
-				traverse($(addedNodes[0]), "canChildList", handleChildList, {
+			$.each(addedNodes, function(i, element) {
+				traverse($(element), "canChildList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			}
+			});
 
 			return ret;
 		} :
 		function (args, callback) {
 			var addedNodes = [];
 
+			// Get all of the nodes that have been added
 			var ret = oldDomManip.call(this, args, function(elem) {
 				addedNodes.push(elem);
 				return callback.apply(this, arguments);
 			});
 
-			if(addedNodes.length) {
-				traverse($(addedNodes[0]), "canChildList", handleChildList, {
+			// Traverse to inform parents of the event.
+			$.each(addedNodes, function(i, element) {
+				traverse($(element), "canChildList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			}
+			});
 
 			return ret;
 		});
@@ -65,7 +67,7 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 	$.cleanData = function (elems) {
 		$.each(elems, function(i, element) {
 			traverse($(element), "canChildList", handleChildList, {
-				removedNodes: elems
+				removedNodes: [element]
 			});
 		});
 

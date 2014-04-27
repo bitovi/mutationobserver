@@ -58,6 +58,26 @@ steal("jquery", "mutationobserver", function($, Observer) {
 		stop();
 	});
 
+	test("It observes multiple children being removed", function() {
+		var element = document.createElement("div");
+		element.innerHTML = "<div class='one'></div><div class='two'></div>";
+
+		var observer = new Observer(function(mutations) {});
+
+		observer.observe(element, {
+			childList: true
+		});
+
+		$("#qunit-test-area").append(element);
+		$(element).empty();
+
+		var records = observer.takeRecords();
+
+		equal(records.length, 2, "There were 2 mutations");
+		equal(records[0].removedNodes.length, 1, "The first mutation included 1 node removed");
+		equal(records[1].removedNodes.length, 1, "The second mutation included 1 node removed");
+	});
+
 	test("It observes nested children being removed using subtree", function() {
 		var element = document.createElement("ul");
 		var second = document.createElement("li");

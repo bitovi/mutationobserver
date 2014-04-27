@@ -4,7 +4,7 @@
  * license that can be found in the LICENSE file.
  */
 
-steal("can/util/weakmap", "can/util/setimmediate", function(WeakMap, setImmediate){
+steal("mutationobserver/weakmap", "mutationobserver/setimmediate", function(WeakMap, setImmediate){
 
 	// If this browser supports MutationObserver natively or if it doesn't support
 	// Mutation Events, go ahead and return.

@@ -28,16 +28,18 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 		function (args, table, callback) {
 			var addedNodes = [];
 
+			// Get all of the nodes that have been added
 			var ret = oldDomManip.call(this, args, table, function(elem) {
 				addedNodes.push(elem);
 				return callback.apply(this, arguments);
 			});
 
-			$.each(addedNodes, function(i, element) {
-				traverse($(element), "canChildList", handleChildList, {
+			// Traverse to inform parents of the event.
+			if(addedNodes.length) {
+				traverse($(addedNodes[0]), "canChildList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			});
+			}
 
 			return ret;
 		} :
@@ -49,11 +51,11 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 				return callback.apply(this, arguments);
 			});
 
-			$.each(addedNodes, function(i, element) {
-				traverse($(element), "canChildList", handleChildList, {
+			if(addedNodes.length) {
+				traverse($(addedNodes[0]), "canChildList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			});
+			}
 
 			return ret;
 		});
@@ -176,7 +178,8 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 
 		// Set event properties
 		event.type = "childList";
-		event.target = element;
+		// The target is the parent of the inserted node.
+		event.target = target.parentNode;
 
 		observer._queue(event);
 	};

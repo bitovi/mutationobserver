@@ -121,4 +121,34 @@ steal("jquery", "mutationobserver", function($, Observer) {
 
 		stop();
 	});
+
+	test("It observes deeply nested children being inserted", function() {
+		var element = document.createElement("div");
+		element.innerHTML = "<div><div><span class='inner'></span></div></div>";
+			
+		var child = $(element).find('.inner')[0];
+		$(element).append(child);
+
+		var observer = new Observer(function(mutations) {
+			start();
+		});
+
+		observer.observe(element, {
+			childList: true,
+			subtree: true
+		});
+
+		// Do the mutation
+		$("#qunit-test-area").append(element);
+		$(child).append("<div class='new-node'></div>");
+
+		var records = observer.takeRecords();
+		var mutation = records[0];
+
+		equal(records.length, 1);
+		equal(mutation.type, "childList");
+		equal(mutation.target, child);
+		equal(mutation.addedNodes.length, 1);
+		equal(mutation.addedNodes[0].className, "new-node", "The correct added node");
+	});
 });

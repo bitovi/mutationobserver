@@ -5,9 +5,9 @@
 
 steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 
-	if(window.MutationObserver || window.MutationEvent) {
+	/*if(window.MutationObserver || window.MutationEvent) {
 		return;
-	}
+	}*/
 
 	// Feature detect which domManip we are using.
 	// Handles insertions, like `append`, `insertBefore`, etc.
@@ -35,11 +35,11 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 			});
 
 			// Traverse to inform parents of the event.
-			if(addedNodes.length) {
-				traverse($(addedNodes[0]), "canChildList", handleChildList, {
+			$.each(addedNodes, function(i, element) {
+				traverse(element, "childList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			}
+			});
 
 			return ret;
 		} :
@@ -51,11 +51,11 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 				return callback.apply(this, arguments);
 			});
 
-			if(addedNodes.length) {
-				traverse($(addedNodes[0]), "canChildList", handleChildList, {
+			$.each(addedNodes, function(i, element) {
+				traverse(element, "childList", handleChildList, {
 					addedNodes: addedNodes
 				});
-			}
+			});
 
 			return ret;
 		});
@@ -64,9 +64,13 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 	var oldClean = $.cleanData;
 	$.cleanData = function (elems) {
 		$.each(elems, function(i, element) {
-			traverse($(element), "canChildList", handleChildList, {
+			traverse(element, "childList", handleChildList, {
 				removedNodes: elems
 			});
+
+			// Since this element is being removed, it might be included in the list of
+			// elements that we are observing, so remove it.
+			cleanBound(element);
 		});
 
 		oldClean(elems);
@@ -75,8 +79,7 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 	// Helper for the 2 different `attr` methods, just checks to see if the element
 	// has a mutationobservation, and if so calls the appropriate handler.
 	var triggerAttributes = function(el, attrName, oldValue) {
-		var $el = $(el);
-		var data = $el.data("canAttribute");
+		var data = $(el).data("moattributes");
 		var event = {
 			target: el,
 			attributeName: attrName,
@@ -87,7 +90,7 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 			handleAttributes(el, el, data, event);
 		}
 
-		traverse($el, "canAttribute", handleAttributes, event);
+		traverse(el, "attributes", handleAttributes, event);
 	};
 
 	// Wrapper for jQuery's `attr` method, determines whether the value has changed
@@ -118,21 +121,35 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 		return res;
 	};
 
+	// Keeps track of elements that are bound to a type of mutation. These are jQuery
+	// objects because we keep them sorted.
+	var allBound = {
+		attributes: $(),
+		childList: $()
+	};
+
 	// Traverse a node looking for `name` data to which we'll call `fn`. This is
 	// how we know if an element's parents are interested in its mutations and if
 	// a mutation event will be queued on the observer.
 	var traverse = function(element, name, fn, event) {
-		var parent = element.parent();
+		var bound = allBound[name];
+		var dataName = "mo" + name;
 
-		while(parent && parent.length) {
-			var data = parent.data(name);
-
-			if(data) {
-				fn(parent[0], element[0], data, event);
+		bound.each(function(i, boundElement) {
+			if($.contains(boundElement, element)) {
+				var data = $(boundElement).data(dataName);
+				fn(boundElement, element, data, event);
 			}
+		});
+	};
 
-			parent = parent.parent();
-		}
+	// Removes an element from the allBound jQuery objects if it is included.
+	var cleanBound = function(element) {
+		// If this is bound to an attributes mutation, remove it.
+		allBound.attributes = allBound.attributes.not(element);
+
+		// If this is bound to a childList mutation, remove it.
+		allBound.childList = allBound.childList.not(element);
 	};
 
 	// Handles queueing of "attributes" mutation event for a given element
@@ -221,20 +238,32 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 			// the data we previously added to the element so that they will be replaced
 			// by the new options passed into `observe`.
 			if(this._observing(element)) {
-				$element.removeData("canAttribute");
-				$element.removeData("canChildList");
+				$element.removeData("moattributes");
+				$element.removeData("mochildList");
 			} else {
+				// Add this to the collection of all bound elements if we care about
+				// either attributes or childList mutations.
+				if(options.attributes) {
+					allBound.attributes.push(element);
+					$.unique(allBound.attributes);
+				}
+
+				if(options.childList) {
+					allBound.childList.push(element);
+					$.unique(allBound.childList);
+				}
+
 				this._bound.push($element);
 			}
 
 			// For the `attributes` type of observation.
 			if(options.attributes) {
-				$element.data("canAttribute", data);
+				$element.data("moattributes", data);
 			}
 
 			// For the `childList` type of observation.
 			if(options.childList) {
-				$element.data("canChildList", data);
+				$element.data("mochildList", data);
 			}
 		},
 
@@ -249,8 +278,10 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 			this._bound = [];
 
 			$.each(bound, function(i, element) {
-				element.removeData("canAttribute");
-				element.removeData("canChildList");
+				element.removeData("moattributes");
+				element.removeData("mochildList");
+
+				cleanBound(element[0]);
 			});
 		},
 

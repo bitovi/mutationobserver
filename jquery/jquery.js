@@ -174,7 +174,38 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 	 * elements for mutations such as attributes changing, or child elements being
 	 * added/removed.
 	 *
+	 * @signature `new MutationObserver(callback(mutations) )`
+	 *
+	 * @param {Function} callback A callback that will be called when mutations occur
+	 *
 	 * @return {MutationObserver} A MutationObserver-like object
+	 *
+	 * @body
+	 *
+	 * A MutationObserver is a special type of object that is able to observe
+	 * HTMLElements and report on mutations that happen to them. Using a MutationObserver
+	 * allows you to create special behavior in response to DOM changes. You use
+	 * MutationObserver by calling the constructor with a callback function that will
+	 * be called when mutations occur on the elements that have been set up
+	 * in `observe`.
+	 *
+	 * ## Example
+	 *
+	 * Let's say you wanted to observe changes to an element's attributes.
+	 *
+	 *     var observer = new MutationObserver(function(mutations) {
+	 *       can.each(mutations, function(mutation) {
+	 *         var type = mutation.type;
+	 *         var target = mutation.target;
+	 *         var attrName = mutation.attributeName;
+	 *         var oldValue = mutation.oldValue;
+	 *       });
+	 *     });
+	 *
+	 *     observer.observe(element, {
+	 *       attributes: true
+	 *     });
+	 * 
 	 */
 	function jMutationObserver(callback) {
 		this._callback = callback;
@@ -187,8 +218,32 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 		/**
 		 * @method observe
 		 * @hide
+		 *
+		 * Observe an element with a set of options to control what type of observations
+		 * you are interested in.
+		 *
+		 * ## Types
+		 *
+		 * There are 2 major groups of observations that a MutationObserver can do.
+		 *
+		 * ### attributes
+		 *
+		 * Setting `attributes: true` on the MutationObserverInit options to observer
+		 * changes to attributes on the provided element. If you are also interested
+		 * in knowing the previous value (when an attribute changes) then also set
+		 * `attributesOldValue` to true.
+		 *
+		 * ### childList
+		 *
+		 * Setting `childList: true` will observe changes to the element's child nodes.
+		 * That could either be nodes being added to the element, or nodes being removed
+		 * from the element.
+		 *
+		 * For each mutation there will either be an array of `addedNodes` or an
+		 * array of `removedNodes` that contains each node that was added/removed.
+		 *
 		 * @param {HTMLElement} element The element to observe
-		 * @param {Object} options Init options for this observation
+		 * @param {MutationObserverInit} options Init options for this observation
 		 */
 		observe: function(element, options) {
 			var $element = $(element);
@@ -224,7 +279,9 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 		 * @method disconnect
 		 * @hide
 		 *
-		 * Disconnect all observations from this MutationObserver
+		 * Disconnect all observations from this MutationObserver. This will prevent
+		 * any further mutations from causing the MutationObserver's callback from
+		 * being called.
 		 */
 		disconnect: function() {
 			var bound = this._bound;
@@ -240,9 +297,27 @@ steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
 		 * @method takeRecords
 		 * @hide
 		 *
-		 * Takes the current mutations that have not been fired and empties the queue
+		 * Takes the current mutations that have not been fired and empties the queue.
+		 * This is useful if you are making mutations in a script and want to know
+		 * what type of mutation events it is created by do not want to find out in the
+		 * callback (which will not be fired until the next event loop).
 		 *
-		 * @return {Array} An array of mutationts
+		 * ## Example
+		 *
+		 *     var observer = new MutationObserver(function(){});
+		 *
+		 *     observer.observe(element, {
+		 *       attributes: true
+		 *     });
+		 *
+		 *     $(element).attr("foo", "bar");
+		 *
+		 *     var records = observer.takeRecords();
+		 *     var mutation = records[0];
+		 *
+		 *     mutation.attributeName === "foo";
+		 *
+		 * @return {Array} An array of mutations
 		 */
 		takeRecords: function() {
 			var mutations = this._mutations;

@@ -9,8 +9,12 @@
 </head>
 <body>
 <div>
-	<span>Time: </span><span id="time"></span><span> ms</span>
+	<span>Without observer: </span><span id="time1"></span><span> ms</span>
 </div>
+<div>
+	<span>With observer: </span><span id="time2"></span><span> ms</span>
+</div>
+<div id="mutations"></div>
 <hr/>
 
 <div id="holder-complex">
@@ -40,23 +44,44 @@
 <script src="lib/steal/steal.js"></script>
 <script>
 steal("jquery", "mutationobserver", function($, Observer) {
-	var observer = new Observer(function(mutations, observer) {
+	var complex = $("#holder-complex");
+	var insertion = $("#holder-complex-insertion-point");
+
+	var go = function() {
+		for (var i = 0; i < 1000; i++) {
+			insertion.append("<div>I'm fast</div>");
+		}
+	};
+
+	var withoutObserver = function() {
+		var start = new Date();
+		go();
 		var stop = new Date();
-		$("#time").append(stop - start);
-	});
+		return stop - start;
+	};
 
-	var complex = $('#holder-complex');
-	var insertion = $('#holder-complex-insertion-point');
+	var withObserver = function() {
+		var observer = new Observer(function(m) {
+			$("#mutations").html("I just saw " + m.length + " mutations");	
+		});
 
-	observer.observe(complex[0], {
-		childList: true,
-		subtree: true
-	});
+		observer.observe(complex[0], {
+			childList: true,
+			subtree: true
+		});
 
-	var start = new Date();
-	for (var i = 0; i < 1000; i++) {
-		insertion.append('<div>Junk</div>');
-	}
+		var start = new Date();
+		go();
+		var stop = new Date();
+		return stop - start;
+	};
+
+	// Run it without observers
+	$("#time1").html(withoutObserver());
+	insertion.html("");
+
+	// Run it with observers
+	$("#time2").html(withObserver());
 });
 </script>
 </body>

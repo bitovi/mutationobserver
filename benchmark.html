@@ -1,0 +1,63 @@
+
+
+
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>MutationObserver benchmark</title>
+</head>
+<body>
+<div>
+	<span>Time: </span><span id="time"></span><span> ms</span>
+</div>
+<hr/>
+
+<div id="holder-complex">
+  <div>
+    <div>
+      <div>
+        <div>
+          <div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div id="holder-complex-insertion-point"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="lib/steal/steal.js"></script>
+<script>
+steal("jquery", "mutationobserver", function($, Observer) {
+	var observer = new Observer(function(mutations, observer) {
+		var stop = new Date();
+		$("#time").append(stop - start);
+	});
+
+	var complex = $('#holder-complex');
+	var insertion = $('#holder-complex-insertion-point');
+
+	observer.observe(complex[0], {
+		childList: true,
+		subtree: true
+	});
+
+	var start = new Date();
+	for (var i = 0; i < 1000; i++) {
+		insertion.append('<div>Junk</div>');
+	}
+});
+</script>
+</body>
+</html>

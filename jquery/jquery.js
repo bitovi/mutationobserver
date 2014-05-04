@@ -3,7 +3,7 @@
 // This implements `MutationObserver` for older browers that do not support
 // native MutationObservers or Mutation Events.
 
-steal("jquery", "mutationobserver/setimmediate", function($, setImmediate) {
+steal("jquery", "mutationobserver/setimmediate", "mutationobserver/nodetree", function($, setImmediate) {
 
 	if(window.MutationObserver || window.MutationEvent) {
 		return;

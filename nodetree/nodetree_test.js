@@ -97,6 +97,24 @@ steal("jquery", "./nodetree.js", function($, NodeTree) {
 		equal(tree.children[2].element, three, "The third element is three");
 	});
 
+	test("Inserting an adjacent node preceding", function() {
+		var tree = new NodeTree();
+		var one = $("<div id='one'></div>");
+		var two = $("<div id='two'></div>");
+		$("#qunit-test-area").append(one).append(two);
+
+
+		// Insert the second element
+		tree.insert(two);
+
+		// Insert the first element.
+		tree.insert(one);
+
+		equal(tree.children.length, 2, "The root should have 2 elements");
+		equal(tree.children[0].element, one, "The first element is one");
+		equal(tree.children[1].element, two, "The second element is two");
+	});
+
 	test("Inserting an adjacent node in the middle", function() {
 		var tree = new NodeTree();
 		var one = $("<div id='one'></div>");

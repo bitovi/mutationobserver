@@ -64,10 +64,16 @@ steal("jquery", "jquerypp/dom/compare", function($) {
 				}
 				// element procedes leaf
 				else if(relation & 4) {
-					
 					right = middle - 1;
+					leaf = tree[right];
+					relation = leaf && element.compare(leaf.element);
+					if(!leaf || relation & 2) {
+						this.__insert(element, parent, middle - 1);
+						return;
+					}
 
 					console.log("element procedes found");
+					return;
 				}
 
 				//return;

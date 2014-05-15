@@ -79,7 +79,8 @@ steal("jquery", "./nodetree.js", function($, NodeTree) {
 		var tree = new NodeTree();
 		var one = $("<div id='one'></div>");
 		var two = $("<div id='two'></div>");
-		$("#qunit-test-area").append(one).append(two);
+		var three = $("<div id='three'></div>");
+		$("#qunit-test-area").append(one).append(two).append(three);
 
 		// Insert the first element.
 		tree.insert(one);
@@ -87,9 +88,36 @@ steal("jquery", "./nodetree.js", function($, NodeTree) {
 		// Insert the second element
 		tree.insert(two);
 
-		equal(tree.children.length, 2, "The root should have 2 elements");
+		// Insert the third element
+		tree.insert(three);
+
+		equal(tree.children.length, 3, "The root should have 3 elements");
 		equal(tree.children[0].element, one, "The first element is one");
 		equal(tree.children[1].element, two, "The second element is two");
+		equal(tree.children[2].element, three, "The third element is three");
 	});
+
+	test("Inserting an adjacent node in the middle", function() {
+		var tree = new NodeTree();
+		var one = $("<div id='one'></div>");
+		var two = $("<div id='two'></div>");
+		var three = $("<div id='three'></div>");
+		$("#qunit-test-area").append(one).append(two).append(three);
+
+		// Insert the first element.
+		tree.insert(one);
+
+		// Insert the third element
+		tree.insert(three);
+
+		// Insert the second element
+		tree.insert(two);
+
+		equal(tree.children.length, 3, "The root should have 3 elements");
+		equal(tree.children[0].element, one, "The first element is one");
+		equal(tree.children[1].element, two, "The second element is two");
+		equal(tree.children[2].element, three, "The third element is three");
+	});
+
 
 });

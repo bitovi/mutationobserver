@@ -137,5 +137,45 @@ steal("jquery", "./nodetree.js", function($, NodeTree) {
 		equal(tree.children[2].element, three, "The third element is three");
 	});
 
+	test("Complex nested structure", function() {
+		var tree = new NodeTree();
+		var table = $("<table><tbody><tr>" +
+									"<td id='one'></td>" +
+									"<td id='two'><span id='inner'></span></td>" +
+									"</tr></tbody></table>");
+		$("#qunit-test-area").append(table);
+		var one = table.find("#one");
+		var two = table.find("#two");
+		var inner = table.find("#inner");
+
+		// Insert one
+		tree.insert(one);
+
+		// Insert inner
+		tree.insert(inner);
+
+		equal(tree.children.length, 2, "The root has 2 elements");
+		equal(tree.children[0].element, one, "The first child is one");
+		equal(tree.children[1].element, inner, "The second child is inner");
+
+		
+		// Insert table
+		tree.insert(table);
+
+		equal(tree.children.length, 1, "The root has 1 element");
+		equal(tree.children[0].element, table, "The first child is table");
+		
+		// Insert two
+		tree.insert(two);
+
+		equal(tree.children.length, 1, "The root should have 1 element");
+		equal(tree.children[0].element, table, "The root's child is table");
+		equal(tree.children[0].children.length, 2, "The table should have 2 children");
+		equal(tree.children[0].children[0].element, one, "The first child of table is one");
+		equal(tree.children[0].children[1].element, two, "The second child of table is two");
+		equal(tree.children[0].children[1].children[0].element, inner, "The inner most element is inner");
+
+	});
+
 
 });

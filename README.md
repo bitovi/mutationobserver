@@ -4,7 +4,7 @@ This repository includes a collection of MutationObserver polyfills so that you 
 
 * IE8: jQuery polyfill
 * IE9 and IE10: Mutation Events polyfill
-* IE10, Chrome, Safari, Firefox, Opera: Native MutationObserver
+* IE11, Chrome, Safari, Firefox, Opera: Native MutationObserver
 
 # Installation
 
